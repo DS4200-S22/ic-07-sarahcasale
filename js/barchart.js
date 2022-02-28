@@ -24,6 +24,13 @@ const svg1 = d3
   .attr("height", height - margin.top - margin.bottom)
   .attr("viewBox", [0, 0, width, height]);
 
+let svg2 = d3
+  .select("#csv-bar")
+  .append("svg")
+  .attr("width", width-margin.left-margin.right)
+  .attr("height", height - margin.top - margin.bottom)
+  .attr("viewBox", [0, 0, width, height]);
+
 // Hardcoded barchart data
 const data1 = [
   {name: 'A', score: 92},
@@ -68,6 +75,17 @@ svg1.append("g") //g is a placeholder svg
             .tickFormat(i => data1[i].name))  
     .attr("font-size", '20px'); // sets the font size
 
+
+svg2.append("g") //g is a placeholder svg
+   .attr("transform", `translate(${margin.left}, 0)`) //this moves the axis to the left margin
+   .call(d3.axisLeft(yScale1)) // a built in function for the left axis given a scale function from above
+   .attr("font-size", '20px'); //sets the font size
+
+svg2.append("g") //g is a placeholder svg
+    .attr("transform", `translate(0,${height - margin.bottom})`) //This moves the axis to the bottom of the svg
+    .call(d3.axisBottom(xScale1)  // This is a built in function for the bottom axis given a scale function from above
+            .tickFormat(i => data1[i].name))  
+    .attr("font-size", '20px'); // sets the font size
 /* 
 
   Tooltip Set-up  
@@ -95,8 +113,8 @@ const mouseover1 = function(event, d) {
 
 // This creates the mousemove
 const mousemove1 = function(event, d) {
-  tooltip1.style("left", (event.x)+"px") //moves the element to the left by a certain x value
-          .style("top", (event.y + yTooltipOffset) +"px"); //moves the element up by a certain y value
+  tooltip1.style("left", (event.pageX)+"px") //moves the element to the left by a certain x value
+          .style("top", (event.pageY + yTooltipOffset) +"px"); //moves the element up by a certain y value
 }
 
 // This makes the element disappear
@@ -123,6 +141,31 @@ svg1.selectAll(".bar") //selects the elements that it wants to use
      .on("mouseover", mouseover1) //Initiates the introduction of the mouseover tooltip
      .on("mousemove", mousemove1) //Initiates the introduction of the mousemove tooltip
      .on("mouseleave", mouseleave1); //Initiates the introduction of the mouseleave tooltip
+
+d3.csv("data/barchart.csv").then((data) => { 
+
+  // d3.csv parses a csv file and passes the data
+  // to an anonymous function. Note how we build
+  // our visual inside of this anonymous function 
+
+  // let's check our data
+  console.log(data);   
+
+  // add our circles with styling 
+  svg2.selectAll(".bar")
+  .data(data)
+  .enter()
+  .append("rect") //This adds a rectangle for each point
+     .attr("class", "bar") //and makes that rectangle a class bar
+     .attr("x", (d,i) => xScale1(i)) // This sets the x value
+     .attr("y", (d) => yScale1(d.score)) // This sets the y value
+     .attr("height", (d) => (height - margin.bottom) - yScale1(d.score)) // This sets the height
+     .attr("width", xScale1.bandwidth()) // This sets the width
+     .on("mouseover", mouseover1) //Initiates the introduction of the mouseover tooltip
+     .on("mousemove", mousemove1) //Initiates the introduction of the mousemove tooltip
+     .on("mouseleave", mouseleave1); //Initiates the introduction of the mouseleave tooltip
+});
+
 
 
 
